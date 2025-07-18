@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vórtice con Angostura Central</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100vh;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="wormhole"></canvas>
+<script>
+  const canvas = document.getElementById('wormhole');
+  const ctx = canvas.getContext('2d');
+
+  let width, height;
+  const center = { x: 0, y: 0 };
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    center.x = width / 2;
+    center.y = height * -0.2; // 🠕 Subido más arriba
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.depth = Math.random();
+      this.angle = Math.random() * 2 * Math.PI;
+      this.rotationSpeed = 0.05 + Math.random() * 0.05;
+      this.speed = 0.002 + Math.random() * 0.003;
+      this.baseSize = 0.6 + Math.random() * 1.0;
+
+      const hues = [200, 240, 260, 180];
+      const h = hues[Math.floor(Math.random() * hues.length)];
+      this.color = `hsl(${h}, 100%, 50%)`;
+    }
+
+    update() {
+      this.depth += this.speed;
+      if (this.depth > 1) this.reset();
+      this.angle += this.rotationSpeed * (1 - this.depth);
+    }
+
+    draw() {
+      const maxRadius = width * 0.5;
+      const curvedDepth = Math.pow(Math.abs(this.depth - 0.5) * 2, 2);
+      const radius = maxRadius * curvedDepth;
+
+      const x = center.x + Math.cos(this.angle) * radius;
+      const y = center.y + this.depth * height * 1.5;
+
+      const scale = 1 + (1 - curvedDepth) * 1.5;
+      const alpha = 0.8;
+
+      ctx.beginPath();
+      ctx.fillStyle = this.color.replace('50%', `${alpha * 100}%`);
+      ctx.arc(x, y, this.baseSize * scale, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  const particles = [];
+  const total = 3000;
+  for (let i = 0; i < total; i++) {
+    particles.push(new Particle());
+  }
+
+  function animate() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(0, 0, width, height);
+
+    for (const p of particles) {
+      p.update();
+      p.draw();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+</body>
+</html>
