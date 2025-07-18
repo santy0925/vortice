@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vórtice con Angostura Central</title>
+  <title>Vórtice con Centro Más Ancho</title>
   <style>
     html, body {
       margin: 0;
@@ -29,7 +29,7 @@
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
     center.x = width / 2;
-    center.y = height * -0.2; // 🠕 Subido más arriba
+    center.y = height * -0.2;
   }
   window.addEventListener('resize', resize);
   resize();
@@ -44,7 +44,7 @@
       this.angle = Math.random() * 2 * Math.PI;
       this.rotationSpeed = 0.05 + Math.random() * 0.05;
       this.speed = 0.002 + Math.random() * 0.003;
-      this.baseSize = 0.6 + Math.random() * 1.0;
+      this.baseSize = 0.3 + Math.random() * 0.5;
 
       const hues = [200, 240, 260, 180];
       const h = hues[Math.floor(Math.random() * hues.length)];
@@ -59,31 +59,58 @@
 
     draw() {
       const maxRadius = width * 0.5;
-      const curvedDepth = Math.pow(Math.abs(this.depth - 0.5) * 2, 2);
-      const radius = maxRadius * curvedDepth;
 
+      // Suaviza el estrechamiento central (centro más ancho)
+      const curvedDepth = Math.pow(Math.abs(this.depth - 0.4) * 2, 1.6); 
+
+      const radius = maxRadius * curvedDepth;
       const x = center.x + Math.cos(this.angle) * radius;
       const y = center.y + this.depth * height * 1.5;
 
-      const scale = 1 + (1 - curvedDepth) * 1.5;
+      const centerBoost = 1 + (1 - Math.abs(this.depth - 0.5) * 2) * 2.5;
       const alpha = 0.8;
 
       ctx.beginPath();
       ctx.fillStyle = this.color.replace('50%', `${alpha * 100}%`);
-      ctx.arc(x, y, this.baseSize * scale, 0, Math.PI * 2);
+      ctx.arc(x, y, this.baseSize * centerBoost, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
   const particles = [];
-  const total = 3000;
+  const total = 5000;
   for (let i = 0; i < total; i++) {
     particles.push(new Particle());
+  }
+
+  // ✨ Disco central más ancho
+  let pulse = 0;
+  function drawGlowingDisk() {
+    const baseRadius = 220;
+    const wave = 35;
+    const glowRadius = baseRadius + Math.sin(pulse) * wave;
+
+    const gradient = ctx.createRadialGradient(
+      center.x, center.y, 0,
+      center.x, center.y, glowRadius
+    );
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+    gradient.addColorStop(0.5, 'rgba(100, 100, 255, 0.25)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+    ctx.beginPath();
+    ctx.fillStyle = gradient;
+    ctx.arc(center.x, center.y, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    pulse += 0.05;
   }
 
   function animate() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
     ctx.fillRect(0, 0, width, height);
+
+    drawGlowingDisk();
 
     for (const p of particles) {
       p.update();
