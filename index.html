@@ -61,7 +61,7 @@
       const maxRadius = width * 0.5;
 
       // Suaviza el estrechamiento central (centro más ancho)
-      const curvedDepth = Math.pow(Math.abs(this.depth - 0.4) * 2, 1.6); 
+      const curvedDepth = Math.pow(Math.abs(this.depth - 0.2) * 2, 1.4); 
 
       const radius = maxRadius * curvedDepth;
       const x = center.x + Math.cos(this.angle) * radius;
